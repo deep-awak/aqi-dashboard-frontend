@@ -99,6 +99,7 @@ export default function AssistantDrawer({ open, onClose }) {
           </IconButton>
         </Stack>
 
+        {/* Messages */}
         <Box sx={{ flex: 1, overflow: 'auto', p: 2, bgcolor: '#f9fafb' }}>
           {messages.map((msg, idx) => (
             <Box
@@ -140,6 +141,7 @@ export default function AssistantDrawer({ open, onClose }) {
           <div ref={messagesEndRef} />
         </Box>
 
+        {/* Suggestions */}
         <Box sx={{ p: 1, borderTop: 1, borderColor: 'divider', bgcolor: 'white' }}>
           <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 1 }}>
             Suggestions :
@@ -163,6 +165,7 @@ export default function AssistantDrawer({ open, onClose }) {
           </Stack>
         </Box>
 
+        {/* Saisie */}
         <Box sx={{ p: 2, borderTop: 1, borderColor: 'divider', bgcolor: 'white' }}>
           <Stack direction="row" spacing={1}>
             <TextareaAutosize

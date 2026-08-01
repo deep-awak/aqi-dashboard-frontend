@@ -10,13 +10,7 @@ export function useAI() {
     setError(null);
     try {
       const result = await fetchAIInsight(messages, context);
-  
-      if (!result) return '';
-      if (typeof result === 'string') return result;
-      if (result.content) {
-        return typeof result.content === 'object' ? result.content.content || JSON.stringify(result.content) : result.content;
-      }
-      return JSON.stringify(result);
+      return result?.content || result || '';
     } catch (err) {
       setError(err.message);
       return null;
