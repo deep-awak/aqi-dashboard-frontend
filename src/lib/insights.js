@@ -1,6 +1,4 @@
-// Aucune phrase figée : chaque fonction ici prend des données réelles et
-// construit le texte à partir des valeurs. Si les données sont vides,
-// on renvoie null plutôt qu'une phrase de remplissage.
+
 
 export const aqiQualityLabel = (aqi) =>
   aqi == null ? '—' : aqi <= 1.5 ? "Bonne qualité de l'air" : aqi <= 2.5 ? 'Qualité correcte'
@@ -8,7 +6,6 @@ export const aqiQualityLabel = (aqi) =>
 
 const avg = (arr) => (arr.length ? arr.reduce((a, b) => a + b, 0) / arr.length : null);
 
-// Compare la moyenne de la 1ère moitié de la période vs la 2nde moitié.
 export function trendOf(series, key) {
   const vals = (series || []).map((d) => Number(d[key])).filter((v) => !Number.isNaN(v));
   if (vals.length < 4) return null;
@@ -28,7 +25,6 @@ export function bestWorstCity(citySummary) {
   return { best: sorted[0], worst: sorted[sorted.length - 1] };
 }
 
-// Ratio par rapport à des seuils indicatifs OMS (24h) : PM2.5=15, PM10=45, NO2=25 µg/m3.
 export function dominantPollutant(kpis) {
   if (!kpis) return null;
   const candidates = [
