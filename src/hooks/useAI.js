@@ -10,7 +10,8 @@ export function useAI() {
     setError(null);
     try {
       const result = await fetchAIInsight(messages, context);
-      return result;
+  
+      return result?.content || result || '';
     } catch (err) {
       setError(err.message);
       return null;

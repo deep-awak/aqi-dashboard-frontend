@@ -64,7 +64,6 @@ function DashboardContent({
   const theme = useTheme();
   const { cities, isLoading, hasError, kpis, series, citySummary, histo, weekday } = useDashboard();
 
-  // Appliquer les actions provenant de l'assistant IA
   const applyActions = (actions) => {
     actions.forEach((action) => {
       switch (action.type) {
@@ -92,7 +91,6 @@ function DashboardContent({
     });
   };
 
-  // Fond de page
   useEffect(() => {
     document.body.style.background = theme.palette.background.default;
     return () => { document.body.style.background = ''; };
@@ -102,7 +100,6 @@ function DashboardContent({
     <Box sx={{ minHeight: '100vh', bgcolor: 'background.default', color: 'text.primary', p: { xs: 1.5, md: 3 } }}>
       <Title title="Tableau de Bord : Qualité de l'Air" />
 
-      {/* Header avec filtres (sans bouton de thème ni assistant) */}
       <DashboardHeader
         city={city}
         setCity={setCity}
@@ -113,10 +110,8 @@ function DashboardContent({
         cities={cities || []}
       />
 
-      {/* Sélecteur de graphiques */}
       <ChartSelector visibleCharts={visibleCharts} onChange={setVisibleCharts} />
 
-      {/* Contenu principal */}
       {isLoading ? (
         <Box textAlign="center" py={8}>
           <CircularProgress size={28} />
@@ -163,13 +158,11 @@ function DashboardContent({
               )}
             </Grid>
 
-            {/* Synthèse finale (ex-recommandations) */}
             <RecommendationsCard />
           </Box>
         </Fade>
       )}
 
-      {/* Bouton flottant de l'assistant IA */}
       <Box sx={{ position: 'fixed', bottom: 24, right: 24, zIndex: 1000 }}>
         <Badge badgeContent="IA" color="secondary">
           <IconButton
@@ -191,11 +184,7 @@ function DashboardContent({
         </Badge>
       </Box>
 
-      <AssistantDrawer
-        open={assistantOpen}
-        onClose={() => setAssistantOpen(false)}
-        onApplyActions={applyActions}
-      />
+     <AssistantDrawer open={assistantOpen} onClose={() => setAssistantOpen(false)} />
     </Box>
   );
 }
