@@ -12,14 +12,21 @@ import {
 const DashboardContext = createContext();
 
 export function DashboardProvider({ children, filters }) {
-  const { data: cities, loading: citiesLoading, error: citiesError } = useAnalytics(fetchCities, {});
-  const { data: kpis, loading: kpisLoading, error: kpisError } = useAnalytics(fetchKPIs, filters);
-  const { data: series, loading: seriesLoading, error: seriesError } = useAnalytics(fetchTimeseries, filters);
-  const { data: citySummary, loading: citySummaryLoading, error: citySummaryError } = useAnalytics(fetchCitySummary, filters);
-  const { data: histo, loading: histoLoading, error: histoError } = useAnalytics(fetchAQIDistribution, filters);
-  const { data: weekdayRaw, loading: weekdayLoading, error: weekdayError } = useAnalytics(fetchWeekdayDistribution, filters);
+  const { data: citiesData, loading: citiesLoading, error: citiesError } = useAnalytics(fetchCities, {});
+  const { data: kpisData, loading: kpisLoading, error: kpisError } = useAnalytics(fetchKPIs, filters);
+  const { data: seriesData, loading: seriesLoading, error: seriesError } = useAnalytics(fetchTimeseries, filters);
+  const { data: citySummaryData, loading: citySummaryLoading, error: citySummaryError } = useAnalytics(fetchCitySummary, filters);
+  const { data: histoData, loading: histoLoading, error: histoError } = useAnalytics(fetchAQIDistribution, filters);
+  const { data: weekdayData, loading: weekdayLoading, error: weekdayError } = useAnalytics(fetchWeekdayDistribution, filters);
 
-  const isLoading = kpisLoading || seriesLoading || citySummaryLoading || histoLoading || weekdayLoading;
+  const cities = citiesData ?? [];
+  const kpis = kpisData ?? null;
+  const series = seriesData ?? [];
+  const citySummary = citySummaryData ?? [];
+  const histo = histoData ?? [];
+  const weekdayRaw = weekdayData ?? [];
+
+  const isLoading = citiesLoading || kpisLoading || seriesLoading || citySummaryLoading || histoLoading || weekdayLoading;
   const hasError = Boolean(citiesError || kpisError || seriesError || citySummaryError || histoError || weekdayError);
 
   const weekday = useMemo(() => {
@@ -29,13 +36,13 @@ export function DashboardProvider({ children, filters }) {
   }, [weekdayRaw]);
 
   const contextValue = {
-    cities: cities || [],
-    kpis: kpis || null,
-    series: series || [],
-    citySummary: citySummary || [],
-    histo: histo || [],
+    cities,
+    kpis,
+    series,
+    citySummary,
+    histo,
     weekday,
-    weekdayRaw: weekdayRaw || [],
+    weekdayRaw,
     isLoading,
     hasError,
     filters,

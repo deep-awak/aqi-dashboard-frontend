@@ -173,10 +173,12 @@ function DashboardContent({
               width: 56,
               height: 56,
               boxShadow: '0 4px 20px rgba(124, 58, 237, 0.4)',
-              '&:hover': { bgcolor: '#6d28d9' },
               transition: 'transform 0.2s',
               transform: 'scale(1)',
-              '&:hover': { transform: 'scale(1.05)' },
+              '&:hover': {
+                bgcolor: '#6d28d9',
+                transform: 'scale(1.05)',
+              },
             }}
           >
             <Chat />
