@@ -64,7 +64,6 @@ export function barChartNote(citySummary) {
   return `Lecture : plus la barre est basse, meilleure est la qualité de l'air — ${n.toLocaleString('fr-FR')} mesures agrégées sur ${citySummary.length} ville(s).`;
 }
 
-// -- recommandations : chaque item est déclenché par une condition sur les données --
 export function buildRecommendations({ kpis, series, citySummary, weekday }) {
   const items = [];
 

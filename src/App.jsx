@@ -15,21 +15,18 @@ const MyCustomLayout = (props) => {
       appBar={() => <CustomAppBar onToggleTheme={onToggleTheme} themeMode={themeMode} />}
       sidebar={() => null}
       sx={{
-        // 1. Force la barre de navigation à rester fixée tout en haut de la page
         '& .RaLayout-appBar': {
           position: 'fixed',
           top: 0,
           left: 0,
           right: 0,
-          zIndex: 1200, // S'assure de passer au-dessus des cartes et graphiques
+          zIndex: 1200,
         },
-        // 2. Ajuste la zone de contenu pour qu'elle ne soit pas masquée sous la barre fixe
         '& .RaLayout-content': {
           padding: 0,
-          paddingTop: '64px', // Hauteur standard d'une AppBar Material-UI (à ajuster si votre barre est plus haute)
+          paddingTop: '64px',
           backgroundColor: 'background.default',
         },
-        // 3. Nettoie les comportements de scroll par défaut du conteneur de React-Admin
         '& .RaLayout-contentWithSidebar': {
           display: 'flex',
           flexDirection: 'column',
