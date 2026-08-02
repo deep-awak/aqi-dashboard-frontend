@@ -44,11 +44,18 @@ export default function AssistantDrawer({ open, onClose }) {
       dashboardData
     );
 
+    let cleanContent = 'Désolé, une erreur est survenue.';
     if (result) {
-      setMessages(prev => [...prev, { role: 'assistant', content: result }]);
-    } else {
-      setMessages(prev => [...prev, { role: 'assistant', content: 'Désolé, une erreur est survenue.' }]);
+      if (typeof result === 'string') {
+        cleanContent = result;
+      } else if (result.content) {
+        cleanContent = typeof result.content === 'object' ? result.content.content || JSON.stringify(result.content) : result.content;
+      } else {
+        cleanContent = JSON.stringify(result);
+      }
     }
+
+    setMessages(prev => [...prev, { role: 'assistant', content: cleanContent }]);
     setLoading(false);
   };
 
@@ -114,7 +121,9 @@ export default function AssistantDrawer({ open, onClose }) {
                   whiteSpace: 'pre-wrap',
                 }}
               >
-                <Typography variant="body2">{msg.content}</Typography>
+                <Typography variant="body2">
+                  {typeof msg.content === 'object' ? JSON.stringify(msg.content) : msg.content}
+                </Typography>
               </Paper>
             </Box>
           ))}
