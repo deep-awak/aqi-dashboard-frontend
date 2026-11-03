@@ -1,13 +1,14 @@
 import { useState } from 'react';
-import { fetchAIChat } from '../services/api';
+import { api } from '../services/api';
 
+// Chat libre : lève une erreur en cas d'échec, l'appelant l'affiche.
 export function useAI() {
   const [loading, setLoading] = useState(false);
 
-  const ask = async ({ messages, context, provider, apiKey }) => {
+  const ask = async (payload) => {
     setLoading(true);
     try {
-      const result = await fetchAIChat({ messages, context, provider, apiKey });
+      const result = await api.chat(payload);
       if (typeof result?.content !== 'string' || result.content === '') {
         throw new Error('Réponse vide du service.');
       }

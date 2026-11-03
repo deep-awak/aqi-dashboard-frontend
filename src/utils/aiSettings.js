@@ -1,4 +1,7 @@
-const STORAGE_KEY = 'aqi_ai_settings';
+// Clé API du visiteur : elle reste dans SON navigateur.
+// Par défaut elle est dans sessionStorage (effacée à la fermeture de l'onglet).
+// Elle n'est dans localStorage que si le visiteur coche « Mémoriser sur cet appareil ».
+const STORAGE_KEY = 'airmada_ai_settings';
 
 export function loadSettings() {
   for (const store of [localStorage, sessionStorage]) {
@@ -9,6 +12,7 @@ export function loadSettings() {
         if (provider && apiKey) return { provider, apiKey };
       }
     } catch {
+      // Stockage indisponible (navigation privée, données bloquées) : on ignore.
     }
   }
   return null;
@@ -27,7 +31,7 @@ export function saveSettings(settings, remember) {
   try {
     sessionStorage.setItem(STORAGE_KEY, raw);
   } catch {
-    // Silencieux : l'app fonctionne sans stockage.
+    // Silencieux : l'application fonctionne sans stockage.
   }
   try {
     if (remember) localStorage.setItem(STORAGE_KEY, raw);
