@@ -1,33 +1,39 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import { fetchAnalyses } from '../services/api';
 
-export function useAnalytics(fetcher, params) {
-  const [data, setData] = useState(null);
-  const [error, setError] = useState(null);
-  const [loading, setLoading] = useState(true);
+let cache = null;
+let pending = null;
 
-  useEffect(() => {
-    let mounted = true;
-    setLoading(true);
-    setError(null);
-
-    fetcher(params)
-      .then((result) => {
-        if (!mounted) return;
-        setData(result);
-        setError(null);
-      })
-      .catch((err) => {
-        if (!mounted) return;
-        console.error('Analytics failed:', err);
-        setError(err.message || 'Impossible de charger les données.');
-        setData(null);
+function loadOnce() {
+  if (cache) return Promise.resolve(cache);
+  if (!pending) {
+    pending = fetchAnalyses()
+      .then((data) => {
+        cache = data;
+        return data;
       })
       .finally(() => {
-        if (mounted) setLoading(false);
+        pending = null;
       });
+  }
+  return pending;
+}
 
-    return () => { mounted = false; };
-  }, [fetcher, JSON.stringify(params)]);
+export function useAnalyses() {
+  const [analyses, setAnalyses] = useState(cache || {});
+  const [loading, setLoading] = useState(!cache);
+  const [error, setError] = useState(null);
 
-  return { data, error, loading };
+  useEffect(() => {
+    let alive = true;
+    loadOnce()
+      .then((data) => alive && setAnalyses(data))
+      .catch((err) => alive && setError(err.message))
+      .finally(() => alive && setLoading(false));
+    return () => {
+      alive = false;
+    };
+  }, []);
+
+  return { analyses, loading, error };
 }

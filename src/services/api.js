@@ -22,7 +22,7 @@ class ApiClient {
       }
       return await response.json();
     } catch (error) {
-      console.error(`[API] Erreur sur ${normalizedEndpoint}:`, error);
+      console.error(`[API] Erreur sur ${normalizedEndpoint}:`, error.message);
       throw error;
     }
   }
@@ -47,5 +47,8 @@ export const fetchTimeseries = (params) => apiClient.get('/timeseries', params);
 export const fetchCitySummary = (params) => apiClient.get('/cities-summary', params);
 export const fetchAQIDistribution = (params) => apiClient.get('/aqi-distribution', params);
 export const fetchWeekdayDistribution = (params) => apiClient.get('/weekday-distribution', params);
-export const fetchAIInsight = (messages, context) =>
-  apiClient.post('/ai/chat', { messages, context });
+
+export const fetchAnalyses = () => apiClient.get('/analyses');
+
+export const fetchAIChat = ({ messages, context, provider, apiKey }) =>
+  apiClient.post('/ai/chat', { messages, context, provider, apiKey });

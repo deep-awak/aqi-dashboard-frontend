@@ -1,29 +1,21 @@
 import { useState } from 'react';
-import { fetchAIInsight } from '../services/api';
+import { fetchAIChat } from '../services/api';
 
 export function useAI() {
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
 
-  const generateInsight = async (messages, context) => {
+  const ask = async ({ messages, context, provider, apiKey }) => {
     setLoading(true);
-    setError(null);
     try {
-      const result = await fetchAIInsight(messages, context);
-      
-      if (!result) return '';
-      if (typeof result === 'string') return result;
-      if (result.content && typeof result.content === 'string') return result.content;
-      if (result.content && typeof result.content === 'object') return result.content.content || JSON.stringify(result.content);
-      
-      return JSON.stringify(result);
-    } catch (err) {
-      setError(err.message);
-      return null;
+      const result = await fetchAIChat({ messages, context, provider, apiKey });
+      if (typeof result?.content !== 'string' || result.content === '') {
+        throw new Error('Réponse vide du service.');
+      }
+      return result.content;
     } finally {
       setLoading(false);
     }
   };
 
-  return { generateInsight, loading, error };
+  return { ask, loading };
 }
