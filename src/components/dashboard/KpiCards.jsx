@@ -2,7 +2,7 @@ import { Gauge, CloudFog, Cloud, Factory, ArrowUpRight, ArrowDownRight } from 'l
 import { METRICS, WHO_REFERENCE, levelOf, formatValue, weeklyTrend } from '../../utils/aqi';
 
 const ICONS = { aqi: Gauge, pm25: CloudFog, pm10: Cloud, no2: Factory };
-const TONES = { aqi: '#0ea5e9', pm25: '#2563eb', pm10: '#7c3aed', no2: '#f59e0b' };
+const TONES = { aqi: '#f59e0b', pm25: '#f97316', pm10: '#ea580c', no2: '#ef4444' };
 
 export default function KpiCards({ kpis, series }) {
   return (

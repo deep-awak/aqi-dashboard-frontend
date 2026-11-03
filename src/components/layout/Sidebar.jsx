@@ -1,79 +1,103 @@
-import { LayoutDashboard, TrendingUp, Map as MapIcon, BarChart3, Sparkles, Wind, Bot } from 'lucide-react';
-import GaugeArc from '../common/GaugeArc';
+import {
+  LayoutDashboard,
+  TrendingUp,
+  Map as MapIcon,
+  BarChart3,
+  Sparkles,
+  Wind,
+  Bot,
+  MapPin,
+  CalendarDays,
+} from 'lucide-react';
 import { levelOf, formatValue } from '../../utils/aqi';
 
-const NAV = [
-  { href: '#overview', label: "Vue d'ensemble", icon: LayoutDashboard },
-  { href: '#tendances', label: 'Tendances', icon: TrendingUp },
-  { href: '#carte', label: 'Carte', icon: MapIcon },
-  { href: '#regions', label: 'Régions', icon: BarChart3 },
-  { href: '#synthese', label: 'Analyses IA', icon: Sparkles },
+export const NAV_ITEMS = [
+  { id: 'overview', label: "Vue d'ensemble", icon: LayoutDashboard },
+  { id: 'tendances', label: 'Tendances & Évolution', icon: TrendingUp },
+  { id: 'carte', label: 'Carte interactive', icon: MapIcon },
+  { id: 'regions', label: 'Classement des régions', icon: BarChart3 },
+  { id: 'repartition', label: 'Répartition & Semaine', icon: CalendarDays },
+  { id: 'synthese', label: 'Analyses IA', icon: Sparkles },
 ];
 
-export default function Sidebar({ kpis, scopeLabel, regions, selected, onSelect, onOpenAssistant }) {
+export default function Sidebar({
+  kpis,
+  scopeLabel,
+  regions = [],
+  selected,
+  onSelect,
+  activeTab = 'overview',
+  onSelectTab,
+  onOpenAssistant,
+}) {
   const level = levelOf(kpis?.aqi);
 
   return (
-    <aside className="sidebar">
+    <aside className="sidebar no-scroll-sidebar">
+      {/* Brand */}
       <div className="brand">
         <span className="brand-icon">
-          <Wind size={20} />
+          <Wind size={22} />
         </span>
         <div>
           <strong>AirMada</strong>
-          <small>Qualité de l'air</small>
+          <small>Qualité de l'air à Madagascar</small>
         </div>
       </div>
 
-      <nav className="nav">
-        {NAV.map(({ href, label, icon: Icon }) => (
-          <a key={href} href={href}>
-            <Icon size={18} />
-            {label}
-          </a>
-        ))}
-      </nav>
-
-      <div className="card status-card">
-        <p className="muted small">Statut · {scopeLabel}</p>
-        <GaugeArc value={kpis?.aqi} />
-        <div className="status-value">
-          <span className="level-bubble" style={{ background: level?.color ?? '#94a3b8' }}>
-            {level?.label ?? 'Indisponible'}
-          </span>
-          <strong>{formatValue(kpis?.aqi)} / 5</strong>
-        </div>
-      </div>
-
-      <div className="regions">
-        <p className="eyebrow">Choisir une région</p>
-        <button
-          className={`region-btn ${selected === 'all' ? 'active' : ''}`}
-          onClick={() => onSelect('all')}
-        >
-          Tout Madagascar
-        </button>
-        {regions.map((r) => {
-          const lv = levelOf(r.aqi);
+      {/* Navigation (drives which graphs appear) */}
+      <nav className="nav" aria-label="Menu principal">
+        {NAV_ITEMS.map(({ id, label, icon: Icon }) => {
+          const isActive = activeTab === id;
           return (
             <button
-              key={r.city_name}
-              className={`region-btn ${selected === r.city_name ? 'active' : ''}`}
-              onClick={() => onSelect(r.city_name)}
+              key={id}
+              className={`nav-tab-btn ${isActive ? 'active' : ''}`}
+              onClick={() => onSelectTab(id)}
             >
-              <span>{r.city_name}</span>
-              <span className="dot-value">
-                <i className="dot" style={{ background: lv?.color ?? '#cbd5e1' }} />
-                {formatValue(r.aqi)}
-              </span>
+              <Icon size={18} />
+              <span>{label}</span>
+              {isActive && <span className="nav-active-pill" />}
             </button>
           );
         })}
+      </nav>
+
+      {/* Region Selector Select Dropdown (replaces long scrolling list) */}
+      <div className="sidebar-region-box">
+        <label htmlFor="sidebar-region-select" className="sidebar-box-label">
+          <MapPin size={14} />
+          <span>Région active</span>
+        </label>
+        
+        <div className="select-wrapper">
+          <select
+            id="sidebar-region-select"
+            className="sidebar-select"
+            value={selected}
+            onChange={(e) => onSelect(e.target.value)}
+          >
+            <option value="all">Madagascar (Global)</option>
+            {regions.map((r) => (
+              <option key={r.city_name} value={r.city_name}>
+                {r.city_name} {r.aqi ? `(AQI ${formatValue(r.aqi)})` : ''}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {/* Compact status pill for active selection */}
+        <div className="sidebar-status-pill">
+          <span className="status-dot" style={{ background: level?.color ?? '#10b981' }} />
+          <span className="status-text">{level?.label ?? 'Modéré'}</span>
+          <span className="status-val">{formatValue(kpis?.aqi)} / 5</span>
+        </div>
       </div>
 
+      {/* Assistant AI Button at bottom */}
       <button className="assistant-btn" onClick={onOpenAssistant}>
         <Bot size={18} />
-        Assistant IA
+        <span>Assistant IA Mada</span>
       </button>
     </aside>
   );

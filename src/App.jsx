@@ -1,10 +1,23 @@
 import { useMemo, useState } from 'react';
-import { Map as MapIcon, TrendingUp, BarChart3, CalendarDays, Sparkles, MapPin, RefreshCw } from 'lucide-react';
+import {
+  Map as MapIcon,
+  TrendingUp,
+  BarChart3,
+  CalendarDays,
+  Sparkles,
+  MapPin,
+  RefreshCw,
+  LayoutDashboard,
+  Layers,
+  ArrowRight,
+} from 'lucide-react';
 import { useDashboardData } from './hooks/useDashboardData';
 import { useAnalyses } from './hooks/useAnalyses';
 import Sidebar from './components/layout/Sidebar';
 import TopBar from './components/layout/TopBar';
 import Hero from './components/dashboard/Hero';
+import AirQualityOverview from './components/dashboard/AirQualityOverview';
+import ForecastPills from './components/dashboard/ForecastPills';
 import KpiCards from './components/dashboard/KpiCards';
 import TrendChart from './components/dashboard/TrendChart';
 import MadagascarMap from './components/dashboard/MadagascarMap';
@@ -29,6 +42,7 @@ export default function App() {
   const [weekend, setWeekend] = useState('all');
   const [refreshKey, setRefreshKey] = useState(0);
   const [assistantOpen, setAssistantOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState('overview');
 
   const data = useDashboardData({ city: region, weekend, refreshKey });
   const { analyses, loading: analysesLoading } = useAnalyses();
@@ -52,118 +66,179 @@ export default function App() {
   };
 
   return (
-    <div className="app">
-      <Sidebar
-        kpis={data.kpis}
-        scopeLabel={scopeLabel}
-        regions={regionItems}
-        selected={region}
-        onSelect={setRegion}
-        onOpenAssistant={() => setAssistantOpen(true)}
-      />
+    <div className="app-page-wrapper">
+      {/* Background layer with subtle light Madagascar satellite map */}
+      <div className="bg-map-backdrop" aria-hidden="true" />
 
-      <main className="main">
-        <TopBar
-          region={region}
-          regions={regions}
-          onRegion={setRegion}
-          weekend={weekend}
-          onWeekend={setWeekend}
-          onRefresh={() => setRefreshKey((k) => k + 1)}
-          loading={data.loading}
+      {/* Main floating rounded dashboard container like the reference design */}
+      <div className="rounded-dashboard-shell">
+        <Sidebar
+          kpis={data.kpis}
+          scopeLabel={scopeLabel}
+          regions={regionItems}
+          selected={region}
+          onSelect={setRegion}
+          activeTab={activeTab}
+          onSelectTab={setActiveTab}
           onOpenAssistant={() => setAssistantOpen(true)}
         />
 
-        {data.loading && (
-          <Notice>
-            Chargement des données. Le serveur peut mettre environ une minute à démarrer après une période d’inactivité.
-          </Notice>
-        )}
+        <main className="main-content-panel">
+          <TopBar
+            region={region}
+            regions={regions}
+            onRegion={setRegion}
+            weekend={weekend}
+            onWeekend={setWeekend}
+            onRefresh={() => setRefreshKey((k) => k + 1)}
+            loading={data.loading}
+            activeTab={activeTab}
+            onSelectTab={setActiveTab}
+            onOpenAssistant={() => setAssistantOpen(true)}
+          />
 
-        {failed.length > 0 && !data.loading && (
-          <Notice tone="warn">
-            Certaines données n’ont pas pu être chargées ({failed.join(', ')}).
-            <button className="link" onClick={() => setRefreshKey((k) => k + 1)}>
-              <RefreshCw size={14} /> Réessayer
-            </button>
-          </Notice>
-        )}
+          {data.loading && (
+            <Notice>
+              Chargement des relevés en direct de Madagascar…
+            </Notice>
+          )}
 
-        <Hero
-          kpis={data.kpis}
-          scopeLabel={scopeLabel}
-          lastDate={lastDate}
-          synthesis={analyses.synthesis}
-          onReadSynthesis={() => document.getElementById('synthese')?.scrollIntoView({ behavior: 'smooth' })}
+          {failed.length > 0 && !data.loading && (
+            <Notice tone="warn">
+              Certaines données n’ont pas pu être chargées ({failed.join(', ')}).
+              <button className="link" onClick={() => setRefreshKey((k) => k + 1)}>
+                <RefreshCw size={14} /> Réessayer
+              </button>
+            </Notice>
+          )}
+
+          {/* VUE 1 : VUE D'ENSEMBLE (DASHBOARD COMME L'IMAGE) */}
+          {activeTab === 'overview' && (
+            <div className="tab-view-content fade-in">
+              {/* Top Row: Mini Region Forecast Cards */}
+              <ForecastPills
+                summary={regionItems}
+                selected={region}
+                onSelect={setRegion}
+              />
+
+              {/* Main 2-column Hero Row (Glowing Orange Card + Air Quality Overview) */}
+              <div className="hero-overview-grid">
+                <Hero
+                  kpis={data.kpis}
+                  selected={region}
+                  regions={regionItems}
+                  onSelect={setRegion}
+                  lastDate={lastDate}
+                />
+
+                <AirQualityOverview
+                  kpis={data.kpis}
+                  scopeLabel={scopeLabel}
+                />
+              </div>
+
+              {/* Metric Cards Grid (PM2.5, PM10, NO2, Relevés) */}
+              <KpiCards kpis={data.kpis} series={data.series} />
+            </div>
+          )}
+
+          {/* VUE 2 : TENDANCES & ÉVOLUTION */}
+          {activeTab === 'tendances' && (
+            <div className="tab-view-content fade-in">
+              <Card>
+                <CardHeader
+                  icon={TrendingUp}
+                  title="Évolution temporelle & Analyse des polluants"
+                  subtitle="Courbe lissée avec repères sanitaires de l’Organisation Mondiale de la Santé (OMS)."
+                />
+                <TrendChart series={data.series} />
+                <AnalysisCard entry={analyses.timeseries} title="Analyse experte des tendances" />
+              </Card>
+            </div>
+          )}
+
+          {/* VUE 3 : CARTE INTERACTIVE */}
+          {activeTab === 'carte' && (
+            <div className="tab-view-content fade-in">
+              <Card>
+                <CardHeader
+                  icon={MapPin}
+                  title="Cartographie des 22 régions de Madagascar"
+                  subtitle="Chaque marqueur correspond au chef-lieu de région. Cliquez pour sélectionner et inspecter."
+                />
+                <MadagascarMap summary={data.summary} selected={region} onSelect={setRegion} />
+                <AnalysisCard entry={analyses.map} title="Analyse géographique" />
+              </Card>
+            </div>
+          )}
+
+          {/* VUE 4 : CLASSEMENT DES RÉGIONS */}
+          {activeTab === 'regions' && (
+            <div className="tab-view-content fade-in">
+              <Card>
+                <CardHeader
+                  icon={BarChart3}
+                  title="Palmarès et comparaison régionale"
+                  subtitle="Indice AQI moyen calculé par région, de la plus exposée à la plus pure."
+                />
+                <RegionRanking summary={data.summary} selected={region} onSelect={setRegion} />
+                <AnalysisCard entry={analyses.cityComparison} title="Comparatif régional" />
+              </Card>
+            </div>
+          )}
+
+          {/* VUE 5 : RÉPARTITION ET COMPARAISON SEMAINE / WEEK-END */}
+          {activeTab === 'repartition' && (
+            <div className="tab-view-content fade-in">
+              <div className="grid-2">
+                <Card>
+                  <CardHeader
+                    icon={MapIcon}
+                    title="Répartition des seuils AQI"
+                    subtitle="Part des mesures selon les 5 échelons de qualité de l’air."
+                  />
+                  <Distribution histo={data.histo} />
+                  <AnalysisCard entry={analyses.histogram} title="Analyse de la répartition" />
+                </Card>
+
+                <Card>
+                  <CardHeader
+                    icon={CalendarDays}
+                    title="Impact Semaine vs Week-end"
+                    subtitle="La baisse du trafic et de l'activité économique réduit-elle la pollution le week-end ?"
+                  />
+                  <WeekdayCompare weekday={data.weekday} />
+                </Card>
+              </div>
+            </div>
+          )}
+
+          {/* VUE 6 : ANALYSES IA */}
+          {activeTab === 'synthese' && (
+            <div className="tab-view-content fade-in">
+              <Card>
+                <CardHeader
+                  icon={Sparkles}
+                  title="Synthèse globale de la situation atmosphérique"
+                  subtitle={analysesLoading ? 'Génération de l’analyse…' : 'Rapport IA exhaustif pour Madagascar.'}
+                />
+                <Synthesis entry={analyses.synthesis} />
+              </Card>
+            </div>
+          )}
+
+          <footer className="footer-panel">
+            Données OpenWeather en direct · 22 Chefs-lieux de région de Madagascar · Modélisation atmosphérique AirMada
+          </footer>
+        </main>
+
+        <AssistantDrawer
+          open={assistantOpen}
+          onClose={() => setAssistantOpen(false)}
+          dashboard={dashboard}
         />
-
-        <KpiCards kpis={data.kpis} series={data.series} />
-
-        <Card id="tendances">
-          <CardHeader
-            icon={TrendingUp}
-            title="Évolution dans le temps"
-            subtitle="Moyenne journalière. La ligne rouge indique le repère de l’OMS quand il existe."
-          />
-          <TrendChart series={data.series} />
-          <AnalysisCard entry={analyses.timeseries} title="Analyse des tendances" />
-        </Card>
-
-        <div className="grid-2">
-          <Card id="carte">
-            <CardHeader
-              icon={MapPin}
-              title="Carte des régions"
-              subtitle="Chaque point est un chef-lieu. Cliquez pour choisir la région."
-            />
-            <MadagascarMap summary={data.summary} selected={region} onSelect={setRegion} />
-            <AnalysisCard entry={analyses.map} title="Analyse géographique" />
-          </Card>
-
-          <Card id="regions">
-            <CardHeader
-              icon={BarChart3}
-              title="Classement des régions"
-              subtitle="AQI moyen par région, de la plus exposée à la moins exposée."
-            />
-            <RegionRanking summary={data.summary} selected={region} onSelect={setRegion} />
-            <AnalysisCard entry={analyses.cityComparison} title="Comparaison des régions" />
-          </Card>
-        </div>
-
-        <div className="grid-2">
-          <Card>
-            <CardHeader icon={MapIcon} title="Répartition des niveaux" subtitle="Part des mesures dans chaque niveau AQI." />
-            <Distribution histo={data.histo} />
-            <AnalysisCard entry={analyses.histogram} title="Analyse de la répartition" />
-          </Card>
-
-          <Card>
-            <CardHeader
-              icon={CalendarDays}
-              title="Semaine et week-end"
-              subtitle="Le niveau de pollution change-t-il selon le type de jour ?"
-            />
-            <WeekdayCompare weekday={data.weekday} />
-          </Card>
-        </div>
-
-        <section id="synthese">
-          <CardHeader
-            icon={Sparkles}
-            title="Synthèse de la situation"
-            subtitle={analysesLoading ? 'Chargement…' : 'Analyse IA sur l’ensemble du pays.'}
-          />
-          <Synthesis entry={analyses.synthesis} />
-        </section>
-
-        <p className="footer">
-          Données : OpenWeather (qualité de l’air) · Chefs-lieux de région de Madagascar · Les analyses IA sont
-          générées une fois par jour et ne changent pas avec les filtres.
-        </p>
-      </main>
-
-      <AssistantDrawer open={assistantOpen} onClose={() => setAssistantOpen(false)} dashboard={dashboard} />
+      </div>
     </div>
   );
 }
